@@ -1,0 +1,32 @@
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django database
+db.sqlite3
+*.sqlite3
+
+# Environment variables
+.env
+*.env
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# Static and media (generated)
+staticfiles/
+media/
