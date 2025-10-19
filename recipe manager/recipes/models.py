@@ -53,7 +53,7 @@ class Recipe(models.Model):
     servings = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(User, related_name='recipes', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
     ingredients = models.ManyToManyField('Ingredient', through='RecipeIngredient', related_name='recipes')
 
     class Meta:
