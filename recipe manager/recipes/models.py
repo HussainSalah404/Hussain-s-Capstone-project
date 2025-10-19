@@ -7,17 +7,20 @@ Models:
 - Recipe: Represents a complete recipe created by a user.
 - RecipeIngredient: Through-model that connects recipes and ingredients with quantities.
 """
+
 from django.conf import settings
 from django.db import models
 
 User = settings.AUTH_USER_MODEL
 
+
 class Category(models.Model):
-    """Stores recipe categories like 'Dessert', 'Main Course', etc."""
+    """Stores recipe categories like 'Dessert', 'Main Course', etc.'"""
     name = models.CharField(max_length=50, unique=True)
 
     class Meta:
         ordering = ['name']
+        verbose_name_plural = 'Categories'
 
     def __str__(self):
         return self.name
@@ -46,15 +49,27 @@ class Recipe(models.Model):
     description = models.TextField(blank=True)
     instructions = models.TextField()
     category = models.ForeignKey(
-        Category, related_name='recipes', on_delete=models.SET_NULL, null=True, blank=True
+        Category,
+        related_name='recipes',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
     preparation_time = models.PositiveIntegerField(help_text="in minutes", default=0)
     cooking_time = models.PositiveIntegerField(help_text="in minutes", default=0)
     servings = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
-    ingredients = models.ManyToManyField('Ingredient', through='RecipeIngredient', related_name='recipes')
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes'
+    )
+    ingredients = models.ManyToManyField(
+        'Ingredient',
+        through='RecipeIngredient',
+        related_name='recipes'
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -74,6 +89,8 @@ class RecipeIngredient(models.Model):
 
     class Meta:
         unique_together = ('recipe', 'ingredient')
+        verbose_name = 'Recipe Ingredient'
+        verbose_name_plural = 'Recipe Ingredients'
 
     def __str__(self):
         qty = f" ({self.quantity})" if self.quantity else ""
