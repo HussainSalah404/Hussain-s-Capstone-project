@@ -1,41 +1,80 @@
-from django.db import models
-from django.contrib.auth.models import User
-
-# Create your models here.
-
-""" 
-Category model - e.g. Breakfast, Lunch, Dessert (the type or group the recipe belongs to)
-The Category model contains only one field:
-- name: A unique name for each category, with a maximum of 100 characters.
 """
+This module defines all database models for the Recipe Management API.
+
+Models:
+- Category: Represents a recipe category (e.g., Dessert, Breakfast).
+- Ingredient: Represents an ingredient that can be reused across recipes.
+- Recipe: Represents a complete recipe created by a user.
+- RecipeIngredient: Through-model that connects recipes and ingredients with quantities.
+"""
+from django.conf import settings
+from django.db import models
+
+User = settings.AUTH_USER_MODEL
+
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    """Stores recipe categories like 'Dessert', 'Main Course', etc."""
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
-""" 
-Recipe model - stores the details of each recipe created by a user.
 
-Fields:
-- title: The name of the recipe (max 200 characters).
-- description: A short overview of what the recipe is about.
-- ingredients: A text field listing ingredients, separated by commas.
-- instructions: Step-by-step directions on how to prepare the recipe.
-- cooking_time: Time (in minutes) required to cook the recipe.
-- category: A ForeignKey link to the Category model, showing what type of recipe it is.
-- created_by: A ForeignKey link to the User who created the recipe.
-- created_at: Automatically stores the date and time the recipe was created.
-"""
+class Ingredient(models.Model):
+    """Stores unique ingredients that can be shared between recipes."""
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Recipe(models.Model):
+    """
+    Represents a recipe created by a user.
+    Each recipe includes:
+    - Basic info: title, description, instructions.
+    - Timings: preparation and cooking time.
+    - Relations: category, owner, ingredients (through RecipeIngredient).
+    """
     title = models.CharField(max_length=200)
-    description = models.TextField()
-    ingredients = models.TextField(help_text="List ingredients separated by commas")
+    description = models.TextField(blank=True)
     instructions = models.TextField()
-    cooking_time = models.IntegerField(help_text="Time in minutes")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="recipes")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recipes")
+    category = models.ForeignKey(
+        Category, related_name='recipes', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    preparation_time = models.PositiveIntegerField(help_text="in minutes", default=0)
+    cooking_time = models.PositiveIntegerField(help_text="in minutes", default=0)
+    servings = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(User, related_name='recipes', on_delete=models.CASCADE)
+    ingredients = models.ManyToManyField('Ingredient', through='RecipeIngredient', related_name='recipes')
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
+
+
+class RecipeIngredient(models.Model):
+    """
+    Intermediary table linking Recipe and Ingredient.
+    Includes an optional 'quantity' field (e.g., "1 tsp", "2 cups").
+    """
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    quantity = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        unique_together = ('recipe', 'ingredient')
+
+    def __str__(self):
+        qty = f" ({self.quantity})" if self.quantity else ""
+        return f"{self.ingredient.name}{qty} in {self.recipe.title}"
