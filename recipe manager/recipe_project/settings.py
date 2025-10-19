@@ -12,18 +12,21 @@ This file configures Djangos settings including:
 import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
 
 # ------------------------------------------------------------
 # BASE DIRECTORY
 # ------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 # ------------------------------------------------------------
 # SECURITY
 # ------------------------------------------------------------
-SECRET_KEY = 'django-insecure-4i_d@5zg$u5^lq5p@!@se$tvn#rwga9fh&a*za7v#*0ux$3oo2'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG = os.environ.get('DEBUG') == 'True'
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = allowed_hosts_str.split(',') if allowed_hosts_str else []
 
 # ------------------------------------------------------------
 # INSTALLED APPS
