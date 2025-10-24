@@ -16,9 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework.authtoken.views import obtain_auth_token
+from recipes.views import RecipeViewSet, CategoryViewSet
+
+router = DefaultRouter()
+router.register(r'recipes', RecipeViewSet, basename='recipe')
+router.register(r'categories', CategoryViewSet, basename='category')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('recipes.urls')),
-
+    path('auth/token/', obtain_auth_token, name='token_obtain'),
 ]
