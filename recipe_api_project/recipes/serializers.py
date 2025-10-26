@@ -9,7 +9,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+
     category = CategorySerializer(read_only=True)
+    
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         source='category',
@@ -17,6 +19,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+
+
+    owner = serializers.CharField(source='owner.username', read_only=True)
 
     class Meta:
         model = Recipe
