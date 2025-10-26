@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party apps
     "rest_framework",
-    "rest_framework.authtoken",
 
     # Local apps
     "users",
@@ -49,15 +48,12 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 }
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

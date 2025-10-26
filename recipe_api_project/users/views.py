@@ -1,31 +1,30 @@
-from django.shortcuts import render
-from rest_framework import generics, permissions
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import get_user_model, logout
-from .serializers import RegisterSerializer
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# Create your views here.
+class RegisterView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email', '')  # optional email
 
-User = get_user_model()
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+        user = User.objects.create_user(username=username, password=password, email=email)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'User registered successfully',
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_201_CREATED)
 
 
 class LogoutView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            logout(request)
-            return Response({"detail": "Successfully logged out."})
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
+        return Response({'message': 'Logout successful (client-side only)'}, status=status.HTTP_200_OK)
